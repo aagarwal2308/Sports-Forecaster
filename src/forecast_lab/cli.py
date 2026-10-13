@@ -5,6 +5,7 @@
     backtest   replay history with every model; score on a chosen split
     forecast   file pre-kickoff ESTIMATES (all models) for upcoming games; record finished ones
     scorecard  score live forecasts against what happened
+    calibrate  reliability tables + plot: do forecast probabilities match reality?
     snapshots  list stored raw snapshots
     tune-elo   choose Elo settings using TRAIN seasons only
     simulate   Monte Carlo the rest of a season: win totals, division and playoff odds
@@ -28,6 +29,7 @@ from .clean import clean_snapshot, load_clean_games
 from .elo import EloParams, tune_elo
 from .ingest import find_snapshot, list_snapshots, snapshot_source
 from .metrics import check_test_lock, evaluate, evaluate_by_season
+from .calibration import expected_calibration_error, plot_reliability, reliability_table
 from .scorecard import calibration_table, scorecard
 from .simulate import backtest_simulator, simulate_season, summarize_backtest
 from .sources import NFLVERSE_SCHEDULES
@@ -266,6 +268,24 @@ def cmd_sim_backtest(args) -> None:
               "raw_sha256": cm["raw_sha256"], "summary": summary.to_dict("records")})
 
 
+def cmd_calibrate(args) -> None:
+    games, cm = _get_clean(args.snapshot)
+    seasons = SPLITS[args.split]
+    check_test_lock(seasons, args.unlock_test)
+    tables = {}
+    for name in ("home_rate", "elo"):
+        t = reliability_table(MODELS[name](games), seasons, unlock_test=args.unlock_test)
+        tables[name] = t
+        print(f"\n{name}  (ECE {expected_calibration_error(t):.4f}; {args.split} {min(seasons)}-{max(seasons)})")
+        print(t.round(3).to_string(index=False))
+    out = config.PROJECT_ROOT / "reports" / f"calibration_{args.split}.png"
+    plot_reliability(tables, f"Calibration, {args.split} seasons {min(seasons)}-{max(seasons)} "
+                             f"(snapshot {cm['raw_sha256'][:12]})", out)
+    print(f"\nPlot saved to {out.relative_to(config.PROJECT_ROOT)}")
+    _journal({"command": "calibrate", "split": args.split, "raw_sha256": cm["raw_sha256"],
+              "ece": {k: round(expected_calibration_error(t), 5) for k, t in tables.items()}})
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="forecast-lab", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="command", required=True)
@@ -285,6 +305,11 @@ def build_parser() -> argparse.ArgumentParser:
     f.add_argument("--days", type=int, default=7, help="forecast games within N days of the next game")
     f.set_defaults(func=cmd_forecast)
     sub.add_parser("scorecard", help="score live pre-kickoff forecasts").set_defaults(func=cmd_scorecard)
+    ca = sub.add_parser("calibrate", help="reliability tables and plot")
+    ca.add_argument("--snapshot", help="sha256 prefix (default: latest)")
+    ca.add_argument("--split", choices=list(SPLITS), default="validation")
+    ca.add_argument("--unlock-test", action="store_true")
+    ca.set_defaults(func=cmd_calibrate)
     r = sub.add_parser("records", help="summarize stored prediction records")
     r.add_argument("--kind", choices=["backtest", "prospective"])
     r.set_defaults(func=cmd_records)

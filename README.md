@@ -29,6 +29,7 @@ forecast-lab clean              # validate it; prints data-quality issues
 forecast-lab backtest           # replay history; score on VALIDATION seasons 2016-2020
 forecast-lab forecast           # file pre-kickoff estimates from ALL models (shows Elo)
 forecast-lab scorecard          # score live forecasts once games are final
+forecast-lab calibrate          # reliability tables + plot (reports/calibration_validation.png)
 forecast-lab records            # what's in the prediction database
 forecast-lab simulate           # Monte Carlo the rest of the 2026 season (10,000 runs)
 forecast-lab sim-backtest       # check the simulator on 2016-2020 (try --after-week 4 or 12)
@@ -82,6 +83,16 @@ The top settings were within 0.0005 Brier of each other, so the exact choice bar
 
 Elo beat home_rate in every validation season, including 2020, because it knows *which* teams are good.
 
+### Calibration (validation 2016–2020)
+
+![Calibration plot](reports/calibration_validation.png)
+
+All nine of Elo's probability bins have 95% intervals that include the diagonal; it is
+well calibrated. From 30% to 60%, home teams won slightly less often than Elo predicted, which fits
+shrinking home advantage, though it is within noise. home_rate has the lower ECE (0.018 vs 0.022)
+only because it says 57–58% for every game: it's calibrated but uninformative. Read the plot and
+the Brier score together, never ECE alone.
+
 ## Milestone 3: Season simulator
 
 Plays out the remaining regular season 10,000 times using Elo game probabilities, then reports each
@@ -112,6 +123,7 @@ unchanged for 2026.
 | AT-6 | Elo: correct probability formula; ratings are zero-sum (average stays 1500); winners gain; bigger margins count more but favorites are damped; ratings revert between seasons; **no look-ahead**; neutral sites get no home edge. | `tests/test_elo.py` |
 | AT-7 | Simulator: playoff, division, and #1-seed odds sum to exactly 14, 8, and 2; total wins are conserved; same seed gives the same result; **results after the cutoff are ignored even when present in the data**; a finished season has zero uncertainty; locked test seasons are refused. | `tests/test_simulate.py` |
 | AT-8 | Live scoring: only pre-kickoff forecasts count; the latest pre-kickoff forecast per game is scored; ties and pending games are counted, not scored; forecasts filed even one minute after kickoff are refused; old databases migrate without losing rows; settings changes change the model fingerprint. | `tests/test_scorecard.py`, `tests/test_store.py`, `tests/test_baseline.py` |
+| AT-9 | Calibration: Wilson intervals match known values and stay in [0, 1]; perfectly calibrated forecasts give ECE 0; overconfidence is detected; ties aren't scored; test seasons stay locked; the plot is written. | `tests/test_calibration.py` |
 | AT-5 | Backtest and prospective records are separate. A "before the game" forecast is refused for games already played. Re-runs never overwrite. Outcomes are recorded later. **The database refuses edits to stored forecasts.** | `tests/test_store.py` |
 
 ## What each file does
@@ -129,12 +141,13 @@ unchanged for 2026.
 | `models.py` | Registry of all game models (coin_flip, home_rate, elo) |
 | `nfl_structure.py` | Divisions and conferences (checked against the data's `div_game` flag, 2002–2026) and playoff format |
 | `simulate.py` | Monte Carlo season simulator, its backtest, and the summary scores |
+| `calibration.py` | Reliability tables, Wilson intervals, ECE, calibration plot |
 | `scorecard.py` | Scores live forecasts by the pre-registered rule; calibration table |
 | `store.py` | SQLite prediction log (append-only; backtest vs prospective) |
 | `cli.py` | The `forecast-lab` commands. Each run is appended to `journal/experiments.jsonl`. |
 
-**Dependencies:** `pandas` and `numpy` (tables and math), `pytest` (tests). `sqlite3`, `urllib`,
-`hashlib`, and `json` are built into Python. scikit-learn, matplotlib, DuckDB, and Streamlit
+**Dependencies:** `pandas` and `numpy` (tables and math), `matplotlib` (plots), `pytest` (tests). `sqlite3`, `urllib`,
+`hashlib`, and `json` are built into Python. scikit-learn, DuckDB, and Streamlit
 arrive in later milestones.
 
 **Back up `data/raw/`.** nflverse updates `games.csv` in place, so an old version can only be

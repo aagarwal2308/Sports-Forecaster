@@ -30,3 +30,9 @@
 - Wrote PREREGISTRATION.md, then filed the first forecasts: run 20261013T054836Z-2812c7, 15 games (Oct 15–22) × 3 models.
 - Noticed the source alternating between two versions within the hour (sha f2bbc6… vs bbaf0b…). The only difference was
   one game's betting moneyline, which the cleaner drops, so model inputs were identical. Snapshots handle this by design.
+
+## 2026-10-13: Calibration (finishes Milestone 2)
+- Elo on validation: all 9 bins' 95% Wilson intervals include the diagonal; ECE 0.022.
+- Slight lean in the 0.3–0.6 bins (home teams won a bit less than predicted). Hypothesis: the fixed home-field
+  bonus (55) is too large for the post-2019 era. To test as a NEW model version, not by changing elo-1.0+208703b4.
+- home_rate ECE 0.018 is "better" only because it never says anything but 57–58%. ECE must be read alongside Brier.

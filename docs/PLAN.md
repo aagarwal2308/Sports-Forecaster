@@ -91,7 +91,8 @@ forecast_lab/
 │   ├── models.py             model registry
 │   ├── nfl_structure.py      divisions, conferences, playoff format
 │   ├── simulate.py           Monte Carlo season simulator           (M3)
-│   ├── calibration.py        reliability tables + plots             (M2, planned)
+│   ├── calibration.py        reliability tables + plots             (M2)
+│   ├── scorecard.py          live forecast scoring
 │   ├── logistic.py           scikit-learn model                     (M3, planned)
 │   └── players/              player-performance module               (Phase 5, planned)
 ├── dashboard/app.py          Streamlit                               (M5, planned)
@@ -120,6 +121,6 @@ Phase 5 (player performance) starts after this, once the game model is stable.
 
 ## 6. Status
 - Milestone 1 (data pipeline + baselines): **done**
-- Milestone 2 (Elo): **done**. Calibration plots are still to do.
+- Milestone 2 (Elo + calibration plots): **done**
 - Milestone 3 (season simulator): **done** (added on request; it replaces part of days 6–7)
 - Next: calibration plots → logistic regression → Streamlit dashboard (show the simulator there)
