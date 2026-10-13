@@ -1,0 +1,12 @@
+{
+  "source_id": "nflverse_schedules",
+  "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+  "license": "CC-BY-4.0",
+  "attribution": "NFL schedule and results data from the nflverse project (https://github.com/nflverse/nflverse-data), licensed CC BY 4.0.",
+  "retrieved_at_utc": "2026-10-13T05:48:02+00:00",
+  "sha256": "bbaf0b1817bef11870f800237950c62ff24e576cc6ef7ea129d1225b8fd9c149",
+  "n_bytes": 2184052,
+  "n_lines": 7549,
+  "file": "20261013T054802Z_bbaf0b1817be.csv",
+  "tool_version": "0.2.0"
+}
