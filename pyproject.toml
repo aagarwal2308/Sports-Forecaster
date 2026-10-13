@@ -11,12 +11,13 @@ dependencies = [
     "pandas>=2.1",
     "numpy>=1.26",
     "matplotlib>=3.8",
+    "streamlit>=1.40",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 # Added in later milestones; listed here so you can see what's coming.
-later = ["scikit-learn>=1.4", "duckdb>=1.0", "streamlit>=1.35"]
+later = ["scikit-learn>=1.4", "duckdb>=1.0"]
 
 [project.scripts]
 forecast-lab = "forecast_lab.cli:main"

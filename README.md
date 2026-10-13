@@ -40,6 +40,31 @@ forecast-lab tune-elo           # re-run the Elo settings search (train seasons 
 `--seed`, `--model coin_flip` (standings-only baseline), and `--hot` (ratings update inside each run).
 Results are saved to `data/simulations/<run_id>.csv`, with a `.json` file holding the settings and data hash.
 
+## Dashboard
+
+A read-only web page that runs only on your Mac. To open it:
+
+1. Open Terminal.
+2. Paste this and press Enter:
+   ```bash
+   cd ~/code/forecast_lab && .venv/bin/forecast-lab dashboard
+   ```
+3. Your browser opens at http://localhost:8501. If it doesn't, type that address in yourself.
+4. When you're done, go back to Terminal and press **Ctrl+C** to stop it.
+
+| Tab | What it shows |
+|---|---|
+| This week | Elo's stored pre-kickoff forecasts for upcoming games |
+| Live scorecard | How the live forecasts are doing as games finish (cumulative Brier vs. coin flip) |
+| Model history | Brier score by season for train + validation seasons (the test seasons stay hidden), plus calibration |
+| Season simulator | Playoff chances from the latest simulation (hover a bar for details) |
+| Data explorer | Every game by season and team, plus data-quality checks |
+| Journal | The pre-registration, research notes, and recent automatic runs |
+
+The page has **no buttons that change anything**. Forecasts are filed only by the scheduled runs.
+It only accepts connections from your own computer, Streamlit's usage statistics are turned off,
+and the "Deploy" (publish online) button is hidden.
+
 ## Live forecast test (2026 season)
 
 The rules were fixed **before** the first forecast, in [journal/PREREGISTRATION.md](journal/PREREGISTRATION.md).
@@ -124,6 +149,7 @@ unchanged for 2026.
 | AT-7 | Simulator: playoff, division, and #1-seed odds sum to exactly 14, 8, and 2; total wins are conserved; same seed gives the same result; **results after the cutoff are ignored even when present in the data**; a finished season has zero uncertainty; locked test seasons are refused. | `tests/test_simulate.py` |
 | AT-8 | Live scoring: only pre-kickoff forecasts count; the latest pre-kickoff forecast per game is scored; ties and pending games are counted, not scored; forecasts filed even one minute after kickoff are refused; old databases migrate without losing rows; settings changes change the model fingerprint. | `tests/test_scorecard.py`, `tests/test_store.py`, `tests/test_baseline.py` |
 | AT-9 | Calibration: Wilson intervals match known values and stay in [0, 1]; perfectly calibrated forecasts give ECE 0; overconfidence is detected; ties aren't scored; test seasons stay locked; the plot is written. | `tests/test_calibration.py` |
+| AT-10 | Dashboard: shows only games not yet started as "upcoming"; scores only finished, decided games; **never shows locked test seasons**; the whole page renders without errors, with data and with an empty data folder; it has no buttons. | `tests/test_dashboard.py` |
 | AT-5 | Backtest and prospective records are separate. A "before the game" forecast is refused for games already played. Re-runs never overwrite. Outcomes are recorded later. **The database refuses edits to stored forecasts.** | `tests/test_store.py` |
 
 ## What each file does
@@ -142,12 +168,14 @@ unchanged for 2026.
 | `nfl_structure.py` | Divisions and conferences (checked against the data's `div_game` flag, 2002–2026) and playoff format |
 | `simulate.py` | Monte Carlo season simulator, its backtest, and the summary scores |
 | `calibration.py` | Reliability tables, Wilson intervals, ECE, calibration plot |
+| `dashboard_app.py` | The Streamlit dashboard page (read-only) |
+| `dashboard_data.py` | Read-only loaders the dashboard uses (unit-tested separately) |
 | `scorecard.py` | Scores live forecasts by the pre-registered rule; calibration table |
 | `store.py` | SQLite prediction log (append-only; backtest vs prospective) |
 | `cli.py` | The `forecast-lab` commands. Each run is appended to `journal/experiments.jsonl`. |
 
-**Dependencies:** `pandas` and `numpy` (tables and math), `matplotlib` (plots), `pytest` (tests). `sqlite3`, `urllib`,
-`hashlib`, and `json` are built into Python. scikit-learn, DuckDB, and Streamlit
+**Dependencies:** `pandas` and `numpy` (tables and math), `matplotlib` (plots), `streamlit` (dashboard; it brings `altair` for its charts), `pytest` (tests). `sqlite3`, `urllib`,
+`hashlib`, and `json` are built into Python. scikit-learn and DuckDB
 arrive in later milestones.
 
 **Back up `data/raw/`.** nflverse updates `games.csv` in place, so an old version can only be
