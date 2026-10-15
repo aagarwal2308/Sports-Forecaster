@@ -287,16 +287,45 @@ def cmd_calibrate(args) -> None:
               "ece": {k: round(expected_calibration_error(t), 5) for k, t in tables.items()}})
 
 
+def _port_in_use(port: int) -> bool:
+    import socket
+    with socket.socket() as sock:
+        sock.settimeout(0.5)
+        return sock.connect_ex(("localhost", port)) == 0
+
+
 def cmd_dashboard(args) -> None:
-    """Start the Streamlit dashboard, reachable only from this computer."""
+    """Start the Streamlit dashboard (reachable only from this computer) and open it in the browser."""
     import subprocess
+    import time
+    import webbrowser
+
+    url = f"http://localhost:{args.port}"
+    if _port_in_use(args.port):
+        print(f"The dashboard is already running. Opening {url}")
+        webbrowser.open(url)
+        return
     app = Path(__file__).with_name("dashboard_app.py")
-    print("Starting the dashboard at http://localhost:%d  (press Ctrl+C here to stop it)" % args.port)
-    subprocess.run([sys.executable, "-m", "streamlit", "run", str(app),
-                    "--server.address", "localhost",          # not visible to other devices on your network
-                    "--server.port", str(args.port),
-                    "--browser.gatherUsageStats", "false",    # don't send usage statistics to Streamlit
-                    "--client.toolbarMode", "viewer"])        # hide 'Deploy' (it would publish the app online)
+    server = subprocess.Popen([sys.executable, "-m", "streamlit", "run", str(app),
+                               "--server.address", "localhost",          # not visible to other devices on your network
+                               "--server.port", str(args.port),
+                               "--server.headless", "true",              # no first-run email prompt; we open the browser
+                               "--browser.gatherUsageStats", "false",    # don't send usage statistics to Streamlit
+                               "--client.toolbarMode", "viewer"],        # hide 'Deploy' (it would publish the app online)
+                              stdout=subprocess.DEVNULL)
+    for _ in range(60):  # wait up to ~30 s for the server to come up
+        if _port_in_use(args.port) or server.poll() is not None:
+            break
+        time.sleep(0.5)
+    if server.poll() is not None:
+        print("The dashboard could not start. Run `forecast-lab dashboard` in Terminal to see the error.")
+        return
+    print(f"Dashboard running at {url}. Leave this window open while you use it; close it (or press Ctrl+C) to stop.")
+    webbrowser.open(url)
+    try:
+        server.wait()
+    except KeyboardInterrupt:
+        server.terminate()
 
 
 def build_parser() -> argparse.ArgumentParser:

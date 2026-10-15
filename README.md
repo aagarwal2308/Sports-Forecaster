@@ -42,15 +42,17 @@ Results are saved to `data/simulations/<run_id>.csv`, with a `.json` file holdin
 
 ## Dashboard
 
-A read-only web page that runs only on your Mac. To open it:
+A read-only web page that runs only on your Mac.
 
-1. Open Terminal.
-2. Paste this and press Enter:
-   ```bash
-   cd ~/code/forecast_lab && .venv/bin/forecast-lab dashboard
-   ```
-3. Your browser opens at http://localhost:8501. If it doesn't, type that address in yourself.
-4. When you're done, go back to Terminal and press **Ctrl+C** to stop it.
+**The easy way:** double-click **NFL Forecasts** on your Desktop. A Terminal window opens and your
+browser shows the dashboard. Keep the Terminal window open while you use it, and close it when you're done.
+Double-clicking again while it's running just reopens the page.
+
+The icon is a copy of `scripts/NFL Forecasts.command`. If it ever goes missing, copy that file back to your Desktop.
+
+**From Terminal:** `cd ~/code/forecast_lab && .venv/bin/forecast-lab dashboard` (Ctrl+C to stop).
+
+The forecasts update automatically after each scheduled Tuesday/Thursday run. Reload the page to see them.
 
 | Tab | What it shows |
 |---|---|
