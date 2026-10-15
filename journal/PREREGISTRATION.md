@@ -52,3 +52,17 @@ roster moves is used.
 
 ## Log of deviations / missed runs
 _(append dated entries below; never edit the sections above)_
+
+### 2026-10-13: correction (labelling error, no rule change)
+"Period and data" above says the test starts in **Week 7**. The source data labels the games from
+Thu 2026-10-15 onward as **Week 6** (game ids `2026_06_*`); I mislabelled the week. The period is
+unchanged and is defined by date: every game kicking off on or after 2026-10-15, through the
+Super Bowl. No forecasts, models or scoring rules were changed.
+
+### 2026-10-15: scheduled runs stalled; Thursday refresh done by hand
+- The Tuesday 2026-10-13 scheduled run started at 09:10 ET but stopped at its first command, waiting for a
+  one-time permission approval that nobody saw. While it waited, the Thursday 2026-10-15 run did not start.
+- The Thursday refresh was run by hand instead, at 16:53 ET (before the 20:15 ET kickoff of SEA @ DEN):
+  tests passed, fingerprint `elo-1.0+208703b4` confirmed, fresh snapshot `ebb1d425f2b5`, forecast run
+  `20261015T205337Z-0476e9`. Probabilities were unchanged from Tuesday's filing because no games were played in between.
+- No forecast was missed: every game from 2026-10-15 onward had a forecast filed before kickoff.
