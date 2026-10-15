@@ -67,7 +67,7 @@
               │ TEST SET LOCK  │  │ outcomes filled in later  │
               └───────┬────────┘  └─────────────┬─────────────┘
                       ▼                         ▼
-              journal/experiments.jsonl   ──▶  Streamlit dashboard (M5)
+              journal/experiments.jsonl   ──▶  Streamlit dashboard (M4)
 ```
 
 ## 4. Project directory
@@ -93,9 +93,10 @@ forecast_lab/
 │   ├── simulate.py           Monte Carlo season simulator           (M3)
 │   ├── calibration.py        reliability tables + plots             (M2)
 │   ├── scorecard.py          live forecast scoring
+│   ├── dashboard_app.py      Streamlit dashboard (read-only)        (M4)
+│   ├── dashboard_data.py     read-only loaders for the dashboard
 │   ├── logistic.py           scikit-learn model                     (M3, planned)
 │   └── players/              player-performance module               (Phase 5, planned)
-├── dashboard/app.py          Streamlit                               (M5, planned)
 ├── tests/                    pytest acceptance tests
 ├── journal/                  experiments.jsonl (automatic) + your notes
 └── data/                     raw/, clean/, lab.sqlite (created at runtime)
@@ -123,4 +124,5 @@ Phase 5 (player performance) starts after this, once the game model is stable.
 - Milestone 1 (data pipeline + baselines): **done**
 - Milestone 2 (Elo + calibration plots): **done**
 - Milestone 3 (season simulator): **done** (added on request; it replaces part of days 6–7)
-- Next: calibration plots → logistic regression → Streamlit dashboard (show the simulator there)
+- Streamlit dashboard (Milestone 4): **done**
+- Next: logistic regression (must beat Elo on validation)

@@ -6,6 +6,7 @@
     forecast   file pre-kickoff ESTIMATES (all models) for upcoming games; record finished ones
     scorecard  score live forecasts against what happened
     calibrate  reliability tables + plot: do forecast probabilities match reality?
+    dashboard  open the read-only research dashboard in your browser
     snapshots  list stored raw snapshots
     tune-elo   choose Elo settings using TRAIN seasons only
     simulate   Monte Carlo the rest of a season: win totals, division and playoff odds
@@ -286,6 +287,47 @@ def cmd_calibrate(args) -> None:
               "ece": {k: round(expected_calibration_error(t), 5) for k, t in tables.items()}})
 
 
+def _port_in_use(port: int) -> bool:
+    import socket
+    with socket.socket() as sock:
+        sock.settimeout(0.5)
+        return sock.connect_ex(("localhost", port)) == 0
+
+
+def cmd_dashboard(args) -> None:
+    """Start the Streamlit dashboard (reachable only from this computer) and open it in the browser."""
+    import subprocess
+    import time
+    import webbrowser
+
+    url = f"http://localhost:{args.port}"
+    if _port_in_use(args.port):
+        print(f"The dashboard is already running. Opening {url}")
+        webbrowser.open(url)
+        return
+    app = Path(__file__).with_name("dashboard_app.py")
+    server = subprocess.Popen([sys.executable, "-m", "streamlit", "run", str(app),
+                               "--server.address", "localhost",          # not visible to other devices on your network
+                               "--server.port", str(args.port),
+                               "--server.headless", "true",              # no first-run email prompt; we open the browser
+                               "--browser.gatherUsageStats", "false",    # don't send usage statistics to Streamlit
+                               "--client.toolbarMode", "viewer"],        # hide 'Deploy' (it would publish the app online)
+                              stdout=subprocess.DEVNULL)
+    for _ in range(60):  # wait up to ~30 s for the server to come up
+        if _port_in_use(args.port) or server.poll() is not None:
+            break
+        time.sleep(0.5)
+    if server.poll() is not None:
+        print("The dashboard could not start. Run `forecast-lab dashboard` in Terminal to see the error.")
+        return
+    print(f"Dashboard running at {url}. Leave this window open while you use it; close it (or press Ctrl+C) to stop.")
+    webbrowser.open(url)
+    try:
+        server.wait()
+    except KeyboardInterrupt:
+        server.terminate()
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="forecast-lab", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="command", required=True)
@@ -305,6 +347,9 @@ def build_parser() -> argparse.ArgumentParser:
     f.add_argument("--days", type=int, default=7, help="forecast games within N days of the next game")
     f.set_defaults(func=cmd_forecast)
     sub.add_parser("scorecard", help="score live pre-kickoff forecasts").set_defaults(func=cmd_scorecard)
+    d = sub.add_parser("dashboard", help="open the research dashboard")
+    d.add_argument("--port", type=int, default=8501)
+    d.set_defaults(func=cmd_dashboard)
     ca = sub.add_parser("calibrate", help="reliability tables and plot")
     ca.add_argument("--snapshot", help="sha256 prefix (default: latest)")
     ca.add_argument("--split", choices=list(SPLITS), default="validation")
