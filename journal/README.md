@@ -36,3 +36,13 @@
 - Slight lean in the 0.3–0.6 bins (home teams won a bit less than predicted). Hypothesis: the fixed home-field
   bonus (55) is too large for the post-2019 era. To test as a NEW model version, not by changing elo-1.0+208703b4.
 - home_rate ECE 0.018 is "better" only because it never says anything but 57–58%. ECE must be read alongside Brier.
+
+## 2026-10-20: Week 6 review and the learned home-field test
+- Live Week 6: Elo Brier 0.275 on 14 games (coin flip 0.250, home_rate 0.259); favorites won 6/14 vs 9.3 expected.
+  Under Elo's own probabilities, a week this bad happens 8.8% of the time; 6% of 2016–2020 weeks were as bad. Not evidence of a broken model.
+- Tested the 2026-10-13 hypothesis (fixed home bonus too big) as candidate elo_hfa-0.1 (home bonus learns from results).
+  Train 2002–2015: worse at every learning speed. Validation 2016–2020: about 0.0003 better, every 95% range includes 0. The learned bonus
+  rose before the 2019–20 drop, so it adapts too slowly. **Rejected**; code kept for reproducibility. Live model unchanged.
+- Note: this candidate was designed after seeing Week 6, but it was scored only on 2002–2020 data. Week 6 was not used to tune anything.
+- Next idea: QB-adjusted Elo (needs a licensed starting-QB data source).
+- Full report: reports/2026_week06_review.md

@@ -152,6 +152,7 @@ unchanged for 2026.
 | AT-8 | Live scoring: only pre-kickoff forecasts count; the latest pre-kickoff forecast per game is scored; ties and pending games are counted, not scored; forecasts filed even one minute after kickoff are refused; old databases migrate without losing rows; settings changes change the model fingerprint. | `tests/test_scorecard.py`, `tests/test_store.py`, `tests/test_baseline.py` |
 | AT-9 | Calibration: Wilson intervals match known values and stay in [0, 1]; perfectly calibrated forecasts give ECE 0; overconfidence is detected; ties aren't scored; test seasons stay locked; the plot is written. | `tests/test_calibration.py` |
 | AT-10 | Dashboard: shows only games not yet started as "upcoming"; scores only finished, decided games; **never shows locked test seasons**; the whole page renders without errors, with data and with an empty data folder; it has no buttons. | `tests/test_dashboard.py` |
+| AT-11 | Learned-home-field candidate: matches elo-1.0 exactly when learning is off; learns in the right direction; no look-ahead; and **a guard test fails if the frozen live model's code or settings ever change**. | `tests/test_elo_hfa.py` |
 | AT-5 | Backtest and prospective records are separate. A "before the game" forecast is refused for games already played. Re-runs never overwrite. Outcomes are recorded later. **The database refuses edits to stored forecasts.** | `tests/test_store.py` |
 
 ## What each file does
@@ -166,6 +167,7 @@ unchanged for 2026.
 | `baseline.py` | `coin_flip` and `home_rate` (league home-win rate before each date, shrunk toward 50% by a Beta(10,10) prior) |
 | `metrics.py` | Accuracy, Brier, log loss, bootstrap intervals, the test-set lock |
 | `elo.py` | Elo ratings: walk-forward predictions, margin multiplier, season reversion, settings search |
+| `elo_hfa.py` | Tested candidate: Elo with a learned home-field advantage. **Rejected** on 2002–2020 data (see reports/2026_week06_review.md); kept for reproducibility |
 | `models.py` | Registry of all game models (coin_flip, home_rate, elo) |
 | `nfl_structure.py` | Divisions and conferences (checked against the data's `div_game` flag, 2002–2026) and playoff format |
 | `simulate.py` | Monte Carlo season simulator, its backtest, and the summary scores |
