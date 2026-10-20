@@ -8,3 +8,4 @@ data/simulations/
 data/lab.sqlite
 # Raw CSVs (~2 MB each) stay local; back them up. Their manifests (sha256, time, URL) ARE tracked.
 data/raw/**/*.csv
+.DS_Store
